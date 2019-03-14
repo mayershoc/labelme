@@ -163,8 +163,30 @@ class Canvas(QtWidgets.QWidget):
 
             self.overrideCursor(CURSOR_DRAW)
             if not self.current:
+                for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
+                    # Look for a nearby vertex to highlight. If that fails,
+                    # check if we happen to be inside a shape.
+                    index = shape.nearestVertex(pos, self.epsilon)
+                    index_edge = shape.nearestEdge(pos, self.epsilon)
+                    if index is not None:
+                        if self.selectedVertex():
+                            self.hShape.highlightClear()
+                        self.hVertex = index
+                        self.hShape = shape
+                        self.hEdge = index_edge
+                        shape.highlightVertex(index, shape.MOVE_VERTEX)
+                        self.overrideCursor(CURSOR_POINT)
+                        self.setToolTip("Click & drag to move point")
+                        self.setStatusTip(self.toolTip())
+                        self.update()
+                else:  # Nothing found, clear highlights, reset state.
+                    if self.hShape:
+                        self.hShape.highlightClear()
+                        self.update()
+                    self.hVertex, self.hShape, self.hEdge = None, None, None
+                self.edgeSelected.emit(self.hEdge is not None)
                 return
-
+            
             color = self.lineColor
             if self.outOfPixmap(pos):
                 # Don't allow the user to draw outside the pixmap.
@@ -302,22 +324,43 @@ class Canvas(QtWidgets.QWidget):
                         if int(ev.modifiers()) == QtCore.Qt.ControlModifier:
                             self.finalise()
                 elif not self.outOfPixmap(pos):
-                    # Create new shape.
-                    self.current = Shape(shape_type=self.createMode)
-                    self.current.addPoint(pos)
-                    if self.createMode == 'point':
-                        self.finalise()
+                    for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
+                        # Look for a nearby vertex to highlight. If that fails,
+                        # check if we happen to be inside a shape.
+                        index = shape.nearestVertex(pos, self.epsilon)
+                        index_edge = shape.nearestEdge(pos, self.epsilon)
+                        if index is not None:
+                            self.mode = self.EDIT
+                            self.selectShapePoint(pos)
+                            self.prevPoint = pos
+                            self.repaint()
+                            break
                     else:
-                        if self.createMode == 'circle':
-                            self.current.shape_type = 'circle'
-                        self.line.points = [pos, pos]
-                        self.setHiding()
-                        self.drawingPolygon.emit(True)
-                        self.update()
+                        # Create new shape.
+                        self.current = Shape(shape_type=self.createMode)
+                        self.current.addPoint(pos)
+                        if self.createMode == 'point':
+                            self.finalise()
+                        else:
+                            if self.createMode == 'circle':
+                                self.current.shape_type = 'circle'
+                            self.line.points = [pos, pos]
+                            self.setHiding()
+                            self.drawingPolygon.emit(True)
+                            self.update()
             else:
-                self.selectShapePoint(pos)
-                self.prevPoint = pos
-                self.repaint()
+                for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
+                    # Look for a nearby vertex to highlight. If that fails,
+                    # check if we happen to be inside a shape.
+                    index = shape.nearestVertex(pos, self.epsilon)
+                    index_edge = shape.nearestEdge(pos, self.epsilon)
+                    if index is None:
+                        self.mode = self.CREATE
+                        break
+                else:
+                    self.selectShapePoint(pos)
+                    self.prevPoint = pos
+                    self.repaint()
         elif ev.button() == QtCore.Qt.RightButton and self.editing():
             self.selectShapePoint(pos)
             self.prevPoint = pos
@@ -337,7 +380,7 @@ class Canvas(QtWidgets.QWidget):
         if self.movingShape:
             self.storeShapes()
             self.shapeMoved.emit()
-
+        
     def endMove(self, copy=False):
         assert self.selectedShape and self.selectedShapeCopy
         shape = self.selectedShapeCopy
