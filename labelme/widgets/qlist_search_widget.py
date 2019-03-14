@@ -24,3 +24,8 @@ class QlistSearchWidget(QtWidgets.QWidget):
         items = self.listWidget.findItems(filter_text, Qt.MatchContains)
         for item in items:
             self.listWidget.setRowHidden(self.listWidget.row(item), False)
+    
+    def keyPressEvent(self, e):
+        key = e.key()
+        if key == Qt.Key_Escape:
+            self.searchWidget.setText("")

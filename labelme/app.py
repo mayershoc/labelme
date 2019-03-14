@@ -117,8 +117,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.shape_dock.setWidget(self.labelList)
 
         self.uniqLabelList = EscapableQListWidget()
-        self.seachableWidget = QlistSearchWidget(self.uniqLabelList)
-        self.seachableWidget.setToolTip(
+        self.searchableList = QlistSearchWidget(self.uniqLabelList)
+        self.uniqLabelList.setToolTip(
             "Select label to start annotating for it. "
             "Press 'Esc' to deselect.")
         if self._config['labels']:
@@ -126,7 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.uniqLabelList.sortItems()
         self.label_dock = QtWidgets.QDockWidget(u'Label List', self)
         self.label_dock.setObjectName(u'Label List')
-        self.label_dock.setWidget(self.seachableWidget)
+        self.label_dock.setWidget(self.searchableList)
 
         self.fileSearch = QtWidgets.QLineEdit()
         self.fileSearch.setPlaceholderText('Search Filename')
