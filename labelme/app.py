@@ -32,6 +32,7 @@ from labelme.utils import struct
 from labelme.widgets import Canvas
 from labelme.widgets import ColorDialog
 from labelme.widgets import EscapableQListWidget
+from labelme.widgets import QlistSearchWidget
 from labelme.widgets import LabelDialog
 from labelme.widgets import LabelQListWidget
 from labelme.widgets import ToolBar
@@ -116,7 +117,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.shape_dock.setWidget(self.labelList)
 
         self.uniqLabelList = EscapableQListWidget()
-        self.uniqLabelList.setToolTip(
+        self.seachableWidget = QlistSearchWidget(self.uniqLabelList)
+        self.seachableWidget.setToolTip(
             "Select label to start annotating for it. "
             "Press 'Esc' to deselect.")
         if self._config['labels']:
@@ -124,7 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.uniqLabelList.sortItems()
         self.label_dock = QtWidgets.QDockWidget(u'Label List', self)
         self.label_dock.setObjectName(u'Label List')
-        self.label_dock.setWidget(self.uniqLabelList)
+        self.label_dock.setWidget(self.seachableWidget)
 
         self.fileSearch = QtWidgets.QLineEdit()
         self.fileSearch.setPlaceholderText('Search Filename')

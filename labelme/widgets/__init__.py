@@ -5,6 +5,7 @@ from .canvas import Canvas
 from .color_dialog import ColorDialog
 
 from .escapable_qlist_widget import EscapableQListWidget
+from .qlist_search_widget import QlistSearchWidget 
 
 from .label_dialog import LabelDialog
 from .label_dialog import LabelQLineEdit
