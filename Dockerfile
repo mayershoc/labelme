@@ -13,5 +13,5 @@ RUN \
     # utilities
     sudo
 
-RUN pip3 install -v git+https://github.com/wkentaro/labelme.git
+RUN pip3 install -v git+https://github.com/mayershoc/labelme.git
 USER 1000
